@@ -20,6 +20,7 @@ func (conf Config) Access(kong *pdk.PDK) {
 		break
 	case "basic":
 		// Call the basic handler
+		AddBasicAuth(kong, conf.BasicUsername, conf.BasicPassword)
 		break
 	default:
 		_ = kong.Log.Warn("go-upstream-auth: Invalid authentication method")
