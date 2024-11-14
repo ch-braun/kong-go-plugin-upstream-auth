@@ -1,7 +1,7 @@
 package go_upstream_auth
 
 type Config struct {
-	AuthenticationMethod string `json:"authentication_method"` // oauth, basic, api_key
+	AuthenticationMethod string `json:"authentication_method"` // oauth2, basic, apikey
 	OAuthTokenEndpoint   string `json:"oauth_token_endpoint"`
 	OAuthGrantType       string `json:"oauth_grant_type"` // client_credentials, password
 	OAuthClientID        string `json:"oauth_client_id"`
