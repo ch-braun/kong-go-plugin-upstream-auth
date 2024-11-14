@@ -20,5 +20,9 @@ func AddBasicAuth(kong *pdk.PDK, username string, password string) {
 	base64Encoded := base64.StdEncoding.EncodeToString([]byte(username + ":" + password))
 
 	// Add the basic auth header
-	_ = kong.ServiceRequest.SetHeader("Authorization", "Basic "+base64Encoded)
+	err := kong.ServiceRequest.SetHeader("Authorization", "Basic "+base64Encoded)
+	if err != nil {
+		_ = kong.Log.Err("go-upstream-auth: Error setting header: ", err)
+		return
+	}
 }

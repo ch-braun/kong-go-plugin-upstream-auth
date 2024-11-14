@@ -19,6 +19,9 @@ func AddApiKey(kong *pdk.PDK, apiKey string, apiKeyCustomHeader string) {
 		apiKeyCustomHeader = "X-Api-Key"
 	}
 
-	_ = kong.ServiceRequest.SetHeader(apiKeyCustomHeader, apiKey)
-
+	err := kong.ServiceRequest.SetHeader(apiKeyCustomHeader, apiKey)
+	if err != nil {
+		_ = kong.Log.Err("go-upstream-auth: Error setting header: ", err)
+		return
+	}
 }
