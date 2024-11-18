@@ -3,6 +3,7 @@ package go_upstream_auth
 import (
 	"github.com/Kong/go-pdk"
 	"github.com/Kong/go-pdk/entities"
+	"github.com/stretchr/testify/mock"
 )
 
 /*
@@ -69,4 +70,95 @@ func (p *WrappedPDK) ServiceRequest() PDKServiceRequest {
 
 func (p *WrappedPDK) Response() PDKResponse {
 	return p.pdk.Response
+}
+
+// --- Mocks ---
+
+// MockPDK is a mock implementation of the PDK interface
+type MockPDK struct {
+	mock.Mock
+}
+
+func (m *MockPDK) Log() PDKLog {
+	args := m.Called()
+	return args.Get(0).(PDKLog)
+}
+
+func (m *MockPDK) Client() PDKClient {
+	args := m.Called()
+	return args.Get(0).(PDKClient)
+}
+
+func (m *MockPDK) Router() PDKRouter {
+	args := m.Called()
+	return args.Get(0).(PDKRouter)
+}
+
+func (m *MockPDK) ServiceRequest() PDKServiceRequest {
+	args := m.Called()
+	return args.Get(0).(PDKServiceRequest)
+}
+
+func (m *MockPDK) Response() PDKResponse {
+	args := m.Called()
+	return args.Get(0).(PDKResponse)
+}
+
+// MockLog is a mock implementation of the Log interface
+type MockLog struct {
+	mock.Mock
+}
+
+func (m *MockLog) Debug(args ...interface{}) error {
+	m.Called(args)
+	return nil
+}
+
+func (m *MockLog) Warn(args ...interface{}) error {
+	m.Called(args)
+	return nil
+}
+
+func (m *MockLog) Err(args ...interface{}) error {
+	m.Called(args)
+	return nil
+}
+
+// MockClient is a mock implementation of the Client interface
+type MockClient struct {
+	mock.Mock
+}
+
+func (m *MockClient) GetConsumer() (entities.Consumer, error) {
+	args := m.Called()
+	return args.Get(0).(entities.Consumer), args.Error(1)
+}
+
+// MockRouter is a mock implementation of the Router interface
+type MockRouter struct {
+	mock.Mock
+}
+
+func (m *MockRouter) GetRoute() (entities.Route, error) {
+	args := m.Called()
+	return args.Get(0).(entities.Route), args.Error(1)
+}
+
+// MockServiceRequest is a mock implementation of the ServiceRequest interface
+type MockServiceRequest struct {
+	mock.Mock
+}
+
+func (m *MockServiceRequest) SetHeader(key, value string) error {
+	args := m.Called(key, value)
+	return args.Error(0)
+}
+
+// MockResponse is a mock implementation of the Response interface
+type MockResponse struct {
+	mock.Mock
+}
+
+func (m *MockResponse) Exit(status int, body []byte, headers map[string][]string) {
+	m.Called(status, body, headers)
 }
