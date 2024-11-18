@@ -31,7 +31,7 @@ func (conf Config) Access(kong *pdk.PDK) {
 	}
 	if err != nil {
 		_ = kong.Log.Err("go-upstream-auth: Could not authenticate: ", err)
-		kong.Response.Exit(http.StatusInternalServerError, []byte("Internal Server Error: "+err.Error()), make(map[string][]string))
+		kong.Response.Exit(http.StatusUnauthorized, []byte("Unauthorized: "+err.Error()), make(map[string][]string))
 		return
 	}
 }
