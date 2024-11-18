@@ -122,13 +122,18 @@ Then, you may access the Kong Manager at [http://localhost:8002](http://localhos
 2. Create a new route for the service:
     ```bash
     curl -i -X POST http://localhost:8001/services/httpbin/routes \
+    --data "name=httpbin-v1" \
+    --data "protocols[]=http" \
+    --data "protocols[]=https" \
     --data "paths[]=/httpbin/v1"
     ```
 
-3. Enable the plugin for the service:
+3. Enable the plugin for the route:
     ```bash
-    curl -i -X POST http://localhost:8001/services/httpbin/plugins \
+    curl -i -X POST http://localhost:8001/routes/httpbin-v1/plugins \
     --data "name=go-upstream-auth" \
+    --data "protocols[]=http" \
+    --data "protocols[]=https" \
     --data "config.authentication_method=basic" \
     --data "config.basic_username=user" \
     --data "config.basic_password=pass"
