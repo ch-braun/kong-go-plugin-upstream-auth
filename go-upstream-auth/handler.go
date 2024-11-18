@@ -2,13 +2,19 @@ package go_upstream_auth
 
 import (
 	"github.com/Kong/go-pdk"
-	"github.com/Kong/go-pdk/log"
 	"net/http"
 )
 
 func (conf Config) Access(kong *pdk.PDK) {
-	_ = kong.Log.Debug("go-upstream-auth: Access")
-	defer func(Log log.Log, args ...interface{}) { _ = Log.Debug(args) }(kong.Log, "go-upstream-auth: Access complete")
+	// Wrap the PDK in a local type to make functions testable
+	wrappedPDK := &WrappedPDK{pdk: kong}
+	DoAccess(wrappedPDK, &conf)
+}
+
+func DoAccess(kong PDK, conf *Config) {
+	_ = kong.Log().Debug("go-upstream-auth: Access")
+
+	defer func(log PDKLog, args ...interface{}) { _ = log.Debug(args) }(kong.Log(), "go-upstream-auth: Access complete")
 
 	// Determine the configured auth method
 	var err error
@@ -26,12 +32,12 @@ func (conf Config) Access(kong *pdk.PDK) {
 		err = AddBasicAuth(kong, conf.BasicUsername, conf.BasicPassword)
 		break
 	default:
-		_ = kong.Log.Warn("go-upstream-auth: Invalid authentication method")
+		_ = kong.Log().Warn("go-upstream-auth: Invalid authentication method")
 		return
 	}
 	if err != nil {
-		_ = kong.Log.Err("go-upstream-auth: Could not authenticate: ", err)
-		kong.Response.Exit(http.StatusUnauthorized, []byte("Unauthorized: "+err.Error()), make(map[string][]string))
+		_ = kong.Log().Err("go-upstream-auth: Could not authenticate: ", err)
+		kong.Response().Exit(http.StatusUnauthorized, []byte("Unauthorized: "+err.Error()), make(map[string][]string))
 		return
 	}
 }

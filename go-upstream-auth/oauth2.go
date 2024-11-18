@@ -3,7 +3,6 @@ package go_upstream_auth
 import (
 	"encoding/json"
 	"errors"
-	"github.com/Kong/go-pdk"
 	"github.com/Kong/go-pdk/entities"
 	"github.com/patrickmn/go-cache"
 	"io"
@@ -26,48 +25,48 @@ type AccessTokenResponse struct {
 	ExpiresIn   int    `json:"expires_in"`
 }
 
-func AddOAuth2(kong *pdk.PDK, oauth2TokenEndpoint string, oauth2GrantType string, oauth2ClientID string, oauth2ClientSecret string, oAuth2Scope string, oAuth2Username string, oAuth2Password string) error {
+func AddOAuth2(kong PDK, oauth2TokenEndpoint string, oauth2GrantType string, oauth2ClientID string, oauth2ClientSecret string, oAuth2Scope string, oAuth2Username string, oAuth2Password string) error {
 	var accessToken string
 	var err error
 
-	route, err := kong.Router.GetRoute()
+	route, err := kong.Router().GetRoute()
 	if err != nil {
-		_ = kong.Log.Err("go-upstream-auth: Could not get route: ", err)
+		_ = kong.Log().Err("go-upstream-auth: Could not get route: ", err)
 		return err
 	}
 
-	consumer, err := kong.Client.GetConsumer()
+	consumer, err := kong.Client().GetConsumer()
 	if err != nil {
-		_ = kong.Log.Err("go-upstream-auth: Could not get consumer: ", err)
+		_ = kong.Log().Err("go-upstream-auth: Could not get consumer: ", err)
 		return err
 	}
 
 	switch oauth2GrantType {
 	case GrantTypeClientCredentials:
 		// Call the client_credentials handler
-		accessToken, err = fetchAccessTokenWithClientCredentials(route, consumer, oauth2TokenEndpoint, oauth2ClientID, oauth2ClientSecret, oAuth2Scope)
+		accessToken, err = fetchAccessTokenWithClientCredentials(&route, &consumer, oauth2TokenEndpoint, oauth2ClientID, oauth2ClientSecret, oAuth2Scope)
 		break
 	case GrantTypePassword:
 		// Call the password handler
-		accessToken, err = fetchAccessTokenWithPassword(route, consumer, oauth2TokenEndpoint, oAuth2Scope, oAuth2Username, oAuth2Password)
+		accessToken, err = fetchAccessTokenWithPassword(&route, &consumer, oauth2TokenEndpoint, oAuth2Scope, oAuth2Username, oAuth2Password)
 		break
 	default:
-		_ = kong.Log.Warn("go-upstream-auth: Invalid grant type")
+		_ = kong.Log().Warn("go-upstream-auth: Invalid grant type")
 		return nil
 	}
 
 	if err != nil {
-		_ = kong.Log.Err("go-upstream-auth: Could not fetch access token: ", err)
+		_ = kong.Log().Err("go-upstream-auth: Could not fetch access token: ", err)
 		return err
 	}
 
-	err = kong.ServiceRequest.SetHeader("Authorization", "Bearer "+accessToken)
+	err = kong.ServiceRequest().SetHeader("Authorization", "Bearer "+accessToken)
 	if err != nil {
-		_ = kong.Log.Err("go-upstream-auth: Could not set Authorization header: ", err)
+		_ = kong.Log().Err("go-upstream-auth: Could not set Authorization header: ", err)
 		return err
 	}
 
-	_ = kong.Log.Debug("go-upstream-auth: Authorization header set")
+	_ = kong.Log().Debug("go-upstream-auth: Authorization header set")
 	return nil
 }
 
@@ -125,7 +124,7 @@ func doAccessTokenRequest(oauth2TokenEndpoint string, accessTokenRequest string,
 	return &accessTokenResponse, nil
 }
 
-func fetchAccessTokenWithClientCredentials(route entities.Route, consumer entities.Consumer, oauth2TokenEndpoint string, oauth2ClientID string, oauth2ClientSecret string, oAuth2Scope string) (string, error) {
+func fetchAccessTokenWithClientCredentials(route *entities.Route, consumer *entities.Consumer, oauth2TokenEndpoint string, oauth2ClientID string, oauth2ClientSecret string, oAuth2Scope string) (string, error) {
 	cacheKey := "cc:" + oauth2TokenEndpoint + ":" + oauth2ClientID + ":" + oAuth2Scope + ":" + route.Id + ":" + consumer.Id
 	cachedAccessToken, found := accessTokenCache.Get(cacheKey)
 	if found {
@@ -148,7 +147,7 @@ func fetchAccessTokenWithClientCredentials(route entities.Route, consumer entiti
 	return accessTokenResponse.AccessToken, nil
 }
 
-func fetchAccessTokenWithPassword(route entities.Route, consumer entities.Consumer, oauth2TokenEndpoint string, oAuth2Scope string, oAuth2Username string, oAuth2Password string) (string, error) {
+func fetchAccessTokenWithPassword(route *entities.Route, consumer *entities.Consumer, oauth2TokenEndpoint string, oAuth2Scope string, oAuth2Username string, oAuth2Password string) (string, error) {
 	cacheKey := "pw:" + oauth2TokenEndpoint + ":" + oAuth2Username + ":" + oAuth2Scope + ":" + route.Id + ":" + consumer.Id
 	cachedAccessToken, found := accessTokenCache.Get(cacheKey)
 	if found {
