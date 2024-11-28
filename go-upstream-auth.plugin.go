@@ -18,13 +18,14 @@ var PluginPriority = 755
 func main() {
 
 	// If env var is set to false, skip TLS verification
-	if strings.ToLower(os.Getenv("KONG_PLUGIN_CONFIG_GO_JWT_KC_SKIP_TLS_VERIFY")) == "true" {
+	if strings.ToLower(os.Getenv("KONG_PLUGIN_CONFIG_GO_UPSTREAM_AUTH_SKIP_TLS_VERIFY")) == "true" {
 		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	}
 
 	// If env var for priority is set, use it
-	if os.Getenv("KONG_PLUGIN_CONFIG_GO_JWT_KC_PRIORITY") != "" {
-		prio, err := strconv.Atoi(os.Getenv("KONG_PLUGIN_CONFIG_GO_JWT_KC_PRIORITY"))
+	envPluginPrio := os.Getenv("KONG_PLUGIN_CONFIG_GO_UPSTREAM_AUTH_PRIORITY")
+	if envPluginPrio != "" {
+		prio, err := strconv.Atoi(envPluginPrio)
 		if err != nil {
 			log.Fatalf("Error converting priority to int: %s", err)
 		}

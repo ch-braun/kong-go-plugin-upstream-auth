@@ -145,6 +145,14 @@ Then, you may access the Kong Manager at [http://localhost:8002](http://localhos
     ```
    The response should contain a header: `Authorization: Basic dXNlcjpwYXNz`.
 
+5. (Optional) Enable OpenTelemetry for the plugin:
+    ```bash
+    curl -i -X POST http://localhost:8001/plugins \
+    --data "name=opentelemetry" \
+    --data "config.endpoint=http://jaeger:4318/v1/traces" \
+    --data "config.propagation.default_format=b3"
+    ```
+
 ## Compatibility
 
 The plugin is developed with Go 1.23 and tested with Kong Gateway 3.7. It should work with other versions as well. If
